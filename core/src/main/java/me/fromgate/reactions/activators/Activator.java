@@ -23,6 +23,8 @@
 
 package me.fromgate.reactions.activators;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ComparisonChain;
 import me.fromgate.reactions.ReActions;
 import me.fromgate.reactions.actions.Actions;
 import me.fromgate.reactions.flags.Flags;
@@ -36,7 +38,7 @@ import org.bukkit.event.Event;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class Activator {
+public abstract class Activator implements Comparable<Activator> {
 
     String name;
     String group;
@@ -113,28 +115,22 @@ public abstract class Activator {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(name).append(" [").append(getType()).append("]");
-        if (!getFlags().isEmpty()) sb.append(" F:").append(getFlags().size());
-        if (!getActions().isEmpty()) sb.append(" A:").append(getActions().size());
-        if (!getReactions().isEmpty()) sb.append(" R:").append(getReactions().size());
-        return sb.toString();
+        return Objects.toStringHelper(this).omitNullValues().toString();
     }
 
-
-    @Override
-    public int hashCode() {
-         /* Надо будет переделать так чтобы получалась сортировка по алфавиту, хм.. и группировка по группам сразу...
-          */
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
 
     public boolean equals(String name) {
         if (name == null) return false;
         if (name.isEmpty()) return false;
         return this.name.equalsIgnoreCase(name);
+    }
+
+    @Override
+    public int compareTo(Activator o) {
+        return ComparisonChain.start()
+                .compare(o.name, name, String.CASE_INSENSITIVE_ORDER)
+                .compare(o.group, group)
+                .result();
     }
 
     @Override
@@ -196,8 +192,8 @@ public abstract class Activator {
             String flag = flgstr;
             String param = "";
             if (flgstr.contains("=")) {
-                flag = new String(flgstr.substring(0, flgstr.indexOf("=")));
-                param = new String(flgstr.substring(flgstr.indexOf("=") + 1, flgstr.length()));
+                flag = flgstr.substring(0, flgstr.indexOf("="));
+                param = flgstr.substring(flgstr.indexOf("=") + 1, flgstr.length());
             }
             addAction(flag, param);
         }
